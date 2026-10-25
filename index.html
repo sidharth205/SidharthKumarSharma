@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>if(!matchMedia('(prefers-reduced-motion:reduce)').matches)document.documentElement.className='intro hold'</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Sidharth Kumar Sharma — Backend Engineer</title>
 <link rel="icon" href="./favicon.png" type="image/png">
@@ -135,9 +136,74 @@ a{color:inherit}
  .hero h1{font-size:14vw}.avatar{top:84px;right:var(--pad);width:112px;transform:translateY(calc(var(--p)*-8svh))}.avatar .chip{display:none}.pgrid{grid-template-columns:1fr;gap:3svh;padding-top:70px}.story{min-height:50svh}.beat h3{margin-bottom:2svh}.beat .fig{font-size:clamp(4.5rem,26vw,8rem)}
  .flow{padding-left:26px;gap:1.6svh}.flow li{font-size:.72rem}.flow li::before{left:-26px;width:12px;height:12px}.flow::before,.flow::after{left:5px}
  .hud{flex-wrap:wrap;gap:6px}#ch{order:3;width:100%;opacity:.7}.hl a{padding:4px 10px;font-size:11px}#dots a span{display:none}.stage{height:70svh}.xv{width:132px;bottom:12px;opacity:.85}.ptags{font-size:10px}}
-</style>
+/* ===== intro: light theme loader with upward curtain reveal & launch ship ===== */
+#loader{display:none;position:fixed;inset:0;z-index:100;background:#e9d8a6;color:#001219;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;transition:transform 0.9s cubic-bezier(0.77, 0, 0.175, 1)}
+html.intro #loader{display:flex}
+#loader.slide-up{transform:translateY(-100%)}
+.loader-wrap{width:100%;max-width:480px;text-align:center}
+.journey-stage{display:flex;justify-content:space-between;align-items:center;margin-bottom:36px;position:relative;padding:0 10px}
+.journey-stage::before{content:"";position:absolute;top:50%;left:25px;right:25px;height:2px;background:rgba(0,18,25,0.15);z-index:1;transform:translateY(-50%)}
+.j-icon{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0.3;transition:all .5s ease}
+.j-icon svg{width:28px;height:28px;stroke:#001219;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.j-icon span{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.05em;border-bottom:none!important}
+.j-icon.active{opacity:1;color:#9b2226;transform:translateY(-4px)}
+.j-icon.active svg{stroke:#9b2226}
+.loader-track{width:100%;height:4px;background:rgba(0,18,25,0.1);border-radius:2px;overflow:hidden;position:relative;margin-bottom:20px}
+.loader-fill{position:absolute;left:0;top:0;bottom:0;width:0%;background:#9b2226;border-radius:2px;transition:width 0.15s linear}
+.loader-launch{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:0.8}
+.loader-launch svg{width:16px;height:16px;stroke:#9b2226;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;animation:bounce 1s ease-in-out infinite}
+@keyframes bounce{50%{transform:translateY(-4px)}}
+html.intro{overflow:hidden}
+html.intro body::after{opacity:0}
+html.intro .hud,html.intro #dots,html.intro .bar{opacity:0}
+html.intro.go .hud,html.intro.go #dots,html.intro.go .bar{opacity:1;transition:opacity .8s .25s}
+html.intro.go body::after{opacity:.09;transition:opacity .8s}
+html.hold .hero *{animation-play-state:paused}
+/* ===== cursor: Figma-style pointer with a "You" tag, always visible once loaded ===== */
+#cur{display:none}
+@media (hover:hover) and (pointer:fine){
+ html.cc,html.cc *{cursor:none!important}
+ html.cc #cur{display:block;position:fixed;left:0;top:0;z-index:200;pointer-events:none;opacity:1;will-change:transform}
+ #cur svg{display:block;transition:transform .25s var(--ease);transform-origin:3px 2px}
+ #cur svg path{fill:var(--ac);stroke:var(--bg);stroke-width:1.5;stroke-linejoin:round;transition:fill .3s}
+ #cur .lb{position:absolute;left:15px;top:20px;white-space:nowrap;background:var(--ac);color:var(--bg);font:600 12px/1 'DM Sans',sans-serif;padding:5px 9px 6px;border-radius:3px 10px 10px 10px;transition:background .3s,color .3s,transform .25s var(--ease)}
+ #cur.hit svg{transform:scale(1.18) rotate(-8deg)}
+ #cur.hit .lb{background:var(--fg);transform:translateX(3px)}
+ #cur.dn svg{transform:scale(.88)}
+}
+ </style>
 </head>
 <body>
+  <div id="loader" aria-hidden="true">
+    <div class="loader-wrap">
+      <div class="journey-stage">
+        <div class="j-icon active" id="node-0">
+          <svg viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7z"/></svg>
+          <span>Ideation</span>
+        </div>
+        <div class="j-icon" id="node-1">
+          <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          <span>Architecture</span>
+        </div>
+        <div class="j-icon" id="node-2">
+          <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <span>Backend</span>
+        </div>
+        <div class="j-icon" id="node-3">
+          <svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 3.5-2 5.5 2 0 4.24-.5 5.5-2m6-11.5l-7 7L11 16l8.5-8.5a2.12 2.12 0 0 0-3-3l-5 5L9.5 9.5"/></svg>
+          <span>Launch</span>
+        </div>
+      </div>
+      <div class="loader-track">
+        <div class="loader-fill" id="loaderFill"></div>
+      </div>
+      <div class="loader-launch">
+        <svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 3.5-2 5.5 2 0 4.24-.5 5.5-2m6-11.5l-7 7L11 16l8.5-8.5a2.12 2.12 0 0 0-3-3l-5 5L9.5 9.5"/></svg>
+        <span id="loaderText">Compiling portfolio pipeline...</span>
+      </div>
+    </div>
+  </div>
+<div id="cur" aria-hidden="true"><svg width="22" height="24" viewBox="0 0 22 24"><path d="M3 2l15 9.5-6.4 1.6L8.6 20z"/></svg><span class="lb">You</span></div>
 <div class="hud mono"><b>Sidharth Kumar Sharma</b><span id="ch">01 / Intro</span><span class="hl"><a href="./Sidharth%20Kumar_Sharma_Resume.pdf" target="_blank" rel="noopener">Résumé</a><a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=rs9768401@gmail.com" target="_blank" rel="noopener">Email</a></span></div>
 <div class="bar" id="bar"></div>
 <nav id="dots" class="mono" aria-label="Sections"></nav>
@@ -235,35 +301,35 @@ a{color:inherit}
 /* theme: bg, fg, accent | beats: itch, build, twist, result */
 const P=[
 {n:"Glove",k:"IoT + Machine Learning",t:"The Glove That Talks",fig:"97%",cap:"gesture accuracy",th:["#005f73","#e9d8a6","#94d2bd"],
- b:["Sign language is a whole language, and most people around you never learned it. I wanted a hand to be able to speak straight into a speaker.",
+  b:["Sign language is a whole language, and most people around you never learned it. I wanted a hand to be able to speak straight into a speaker.",
     "An ESP32 on a glove streams sensor readings. The stream gets cleaned, then a neural network, trained on 12 gestures, decides which word the hand just said.",
     "Sensors are liars. A shaky finger looks like a brand new word, so most of the real work was teaching the pipeline what to ignore.",
     "97% accuracy across 12 gestures, and the glove speaks in 0.2 to 0.7 seconds, quick enough to feel like a conversation."],
- f:["Sensors on the glove","ESP32 streams data","Noise filtered out","Neural net: 12 gestures","Speech out in ~0.5s"],s:"ESP32 · Python · TensorFlow"},
+  f:["Sensors on the glove","ESP32 streams data","Noise filtered out","Neural net: 12 gestures","Speech out in ~0.5s"],s:"ESP32 · Python · TensorFlow"},
 {n:"Civic App",k:"Full-stack · Team lead",t:"Six People, One API",fig:"6",cap:"teammates led, SIH 2025",th:["#ee9b00","#001219","#9b2226"],
- b:["Problems in a city are easy to spot and strangely hard to report. Smart India Hackathon 2025 gave us a deadline and a mission: close that gap.",
+  b:["Problems in a city are easy to spot and strangely hard to report. Smart India Hackathon 2025 gave us a deadline and a mission: close that gap.",
     "I led a team of six and built the FastAPI backend, about 10 REST endpoints with full CRUD on Supabase and PostgreSQL. The Flutter app talks to it through Ngrok-exposed APIs.",
     "With six people building in parallel, the API was the contract everyone leaned on. If the endpoints moved, the app would fall over, so keeping them steady was the job.",
     "A working civic reporting app, from phone to database, built under hackathon pressure with me leading the team."],
- f:["Citizen reports an issue","Flutter app","Ngrok tunnel","FastAPI · ~10 endpoints","Supabase / PostgreSQL"],s:"FastAPI · Flutter · Supabase"},
+  f:["Citizen reports an issue","Flutter app","Ngrok tunnel","FastAPI · ~10 endpoints","Supabase / PostgreSQL"],s:"FastAPI · Flutter · Supabase"},
 {n:"EssProm",k:"Backend · Internship build",t:"Who Goes Where",fig:"RBAC",cap:"JWT + Supabase auth",th:["#bb3e03","#e9d8a6","#001219"],
- b:["Teams need to assign tasks, track progress and collect timesheets, and managers need one honest view of all of it.",
+  b:["Teams need to assign tasks, track progress and collect timesheets, and managers need one honest view of all of it.",
     "At EssProm Academy I built the Admin module end to end on Node.js, Express and Supabase, with custom REST APIs behind task assignment, tracking and centralized reporting.",
     "The system holds real user data, so every route has to ask two questions: who are you, and are you allowed? I wrote that gate as JWT and Supabase auth middleware with role-based access.",
     "A secured Admin module, delivered alongside the shared Manager module in a single summer."],
- f:["Request arrives","JWT verified","Role checked (RBAC)","Express REST route","Supabase query"],s:"Node.js · Express · Supabase · JWT"},
+  f:["Request arrives","JWT verified","Role checked (RBAC)","Express REST route","Supabase query"],s:"Node.js · Express · Supabase · JWT"},
 {n:"Library AI",k:"Web · NLP",t:"A Library That Listens",fig:"LLM",cap:"chatbot + recommender",th:["#94d2bd","#001219","#bb3e03"],
- b:["Librarians answer the same questions all day, and readers rarely find books they would love by luck alone.",
+  b:["Librarians answer the same questions all day, and readers rarely find books they would love by luck alone.",
     "A web platform on Flask, PHP and MySQL, with an LLM chatbot built on LangChain. An NLP recommender reads each reader's borrowing history and suggests what to read next.",
     "Two worlds in one product. PHP serves the pages and Python does the thinking, so the real puzzle was getting them to cooperate cleanly.",
     "Personalized recommendations for readers, and fewer manual queries landing on staff."],
- f:["Reader borrows books","History stored in MySQL","NLP finds similar tastes","LangChain chatbot answers","Next book suggested"],s:"Flask · PHP · MySQL · LangChain"},
+  f:["Reader borrows books","History stored in MySQL","NLP finds similar tastes","LangChain chatbot answers","Next book suggested"],s:"Flask · PHP · MySQL · LangChain"},
 {n:"Huffman",k:"Desktop · Algorithms",t:"Shrinking Without Losing",fig:"0 loss",cap:"lossless compression",th:["#0a9396","#001219","#e9d8a6"],
- b:["How do you make a file smaller without losing a single byte? Give common bytes short codes, rare bytes long ones.",
+  b:["How do you make a file smaller without losing a single byte? Give common bytes short codes, rare bytes long ones.",
     "Count how often each byte appears, then repeatedly merge the two rarest into a tree. Walk it: left is 0, right is 1. A Java Swing app wraps it in drag-and-drop.",
     "The decoder needs the exact same tree, so the file stores its frequency table up front. Rebuild the tree, and every bit decodes back to the original.",
     "A desktop compressor that restores files byte for byte, built to put algorithm design beside hands-on UI work."],
- f:["Read the bytes","Count frequencies","Merge rarest in a min-heap","Left 0, right 1","Write the .huff file"],s:"Java · Swing · Huffman coding"}];
+  f:["Read the bytes","Count frequencies","Merge rarest in a min-heap","Left 0, right 1","Write the .huff file"],s:"Java · Swing · Huffman coding"}];
 const L=["The itch","The build","The twist","The result"];
 document.getElementById('projects').innerHTML=P.map((p,i)=>`<section class="proj" data-s data-pin data-theme data-bg="${p.th[0]}" data-fg="${p.th[1]}" data-ac="${p.th[2]}" data-t="${p.n}" style="height:300svh"><div class="pin"><div class="ghost serif">0${i+1}</div><div class="pgrid"><div class="story">
 <div class="beat"><div class="mono">0${i+1} / 05 · ${p.k}</div><h3 class="serif">${p.t}</h3><div class="fig serif">${p.fig}</div><div class="cap mono">${p.cap}</div></div>
@@ -303,6 +369,80 @@ const io=new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)return
 T.forEach(s=>io.observe(s));
 const cyc=document.getElementById('cyc'),R=["backend systems","REST APIs","AI that remembers","a glove that speaks"];let ri=0;
 if(!rm)setInterval(()=>{cyc.classList.add('out');setTimeout(()=>{ri=(ri+1)%R.length;cyc.textContent=R[ri];cyc.classList.remove('out')},380)},2600);
+</script>
+<script>
+(function(){
+  const d=document.documentElement;
+  /* ---- smooth upward curtain slide loader (slower) ---- */
+  if(d.classList.contains('intro')){
+    history.scrollRestoration='manual';scrollTo(0,0);
+    const L=document.getElementById('loader'), wait=ms=>new Promise(r=>setTimeout(r,ms));
+    const loaded=new Promise(r=>{document.readyState==='complete'?r():addEventListener('load',r)});
+    
+    const fill=document.getElementById('loaderFill');
+    const text=document.getElementById('loaderText');
+    const nodes=[document.getElementById('node-0'), document.getElementById('node-1'), document.getElementById('node-2'), document.getElementById('node-3')];
+    const stepsText=["Initializing ideation...", "Building architecture...", "Writing backend APIs...", "Ready for launch!"];
+
+    async function runLoader(){
+      const steps = 4;
+      for(let i=0; i<steps; i++){
+        nodes[i].classList.add('active');
+        text.textContent = stepsText[i];
+        
+        let start = performance.now();
+        let duration = 800; /* Slower animation speed per step */
+        
+        while(performance.now() - start < duration){
+          let progress = (performance.now() - start) / duration;
+          let currentPct = ((i + progress) / steps) * 100;
+          fill.style.width = currentPct + '%';
+          await new Promise(r => requestAnimationFrame(r));
+        }
+      }
+
+      fill.style.width = '100%';
+      await Promise.race([Promise.all([loaded, wait(400)]), wait(1500)]);
+
+      L.classList.add('slide-up');
+      d.classList.add('go');
+      d.classList.remove('hold');
+      setTimeout(()=> {
+        L.remove();
+        d.classList.remove('intro','go');
+      }, 900);
+    }
+    runLoader();
+  }
+  /* ---- custom cursor (always visible loop-bound) ---- */
+  if(!matchMedia('(hover:hover) and (pointer:fine)').matches)return;
+  const c=document.getElementById('cur'),t=c.querySelector('.lb');
+  d.classList.add('cc');
+  let mouseX = -100, mouseY = -100, isVisible = false;
+
+  addEventListener('pointermove',e=>{
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    if(!isVisible){
+      isVisible = true;
+      c.classList.add('on');
+    }
+    const h=!!(e.target.closest&&e.target.closest('a,button,summary,label,input,[role=button]'));
+    c.classList.toggle('hit',h);
+    t.textContent=h?'Click':'You';
+  },{passive:true});
+
+  function updateCursor(){
+    c.style.transform=`translate3d(${mouseX-3}px,${mouseY-2}px,0)`;
+    requestAnimationFrame(updateCursor);
+  }
+  requestAnimationFrame(updateCursor);
+
+  d.addEventListener('mouseleave',()=>c.classList.remove('on'));
+  d.addEventListener('mouseenter',()=>{if(isVisible)c.classList.add('on')});
+  addEventListener('pointerdown',()=>c.classList.add('dn'));
+  addEventListener('pointerup',()=>c.classList.remove('dn'));
+})();
 </script>
 </body>
 </html>
