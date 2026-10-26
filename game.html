@@ -3,227 +3,194 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>404 Castle</title>
+<title>Orbit Keeper + Ghost Tower</title>
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html,body{height:100%;margin:0;background:#000;color:#fff;font-family:"Courier New",ui-monospace,monospace;overflow:hidden}
 body{display:flex;align-items:center;justify-content:center}
 #wrap{position:relative}
 canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none;cursor:crosshair}
-.hud{position:absolute;top:8px;left:8px;display:flex;gap:8px;pointer-events:none;font-weight:700;font-size:13px;text-transform:uppercase}
-.hud div{background:#fff;color:#000;border:2px solid #000;padding:3px 8px;box-shadow:3px 3px 0 #000}
+.hud{position:absolute;top:8px;left:8px;right:8px;display:flex;gap:8px;justify-content:space-between;pointer-events:none;font-weight:700;font-size:12px;text-transform:uppercase}
+.hud .l{display:flex;gap:6px}
+.hud div.b{background:#fff;color:#000;border:2px solid #000;padding:2px 7px;box-shadow:3px 3px 0 #000}
+.hud .r{display:flex;gap:6px;pointer-events:auto}
+button{font:inherit;font-weight:700;font-size:12px;text-transform:uppercase;background:#fff;color:#000;border:2px solid #000;box-shadow:3px 3px 0 #000;padding:2px 7px;cursor:pointer}
+button.on{background:#000;color:#fff;border-color:#fff}
+.net{position:absolute;top:40px;left:50%;transform:translateX(-50%);background:#000;color:#fff;border:2px solid #fff;box-shadow:0 0 0 2px #000,3px 3px 0 2px #000;padding:4px 10px;text-align:center;text-transform:uppercase;pointer-events:none;white-space:nowrap;line-height:1.15}
+.net b{display:block;font-size:20px;letter-spacing:.12em}
+.net small{display:block;font-size:10px;opacity:.85}
+.net i{font-style:normal;animation:bl 1.2s steps(1) infinite}
+@keyframes bl{50%{opacity:.15}}
 .help{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:11px;background:#fff;color:#000;border:2px solid #000;padding:2px 8px;text-transform:uppercase;pointer-events:none;white-space:nowrap}
 #msg{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;background:rgba(255,255,255,.7);color:#000;font-weight:700;cursor:pointer;text-align:center}
-#msg b{font-size:30px;background:#000;color:#fff;padding:6px 14px}
+#msg b{font-size:28px;background:#000;color:#fff;padding:6px 14px}
 #msg span{margin-top:10px;font-size:13px;background:#fff;padding:2px 8px;border:2px solid #000}
 </style>
 </head>
 <body>
 <div id="wrap">
 <canvas id="c"></canvas>
-<div class="hud"><div>Score <span id="sc">0</span></div><div>Birds <span id="bl"></span></div></div>
-<div class="help">Drag the bird back &amp; release &middot; R restarts</div>
+<div class="hud">
+  <div class="l"><div class="b"><span id="lab">Score</span> <span id="sc">0</span></div><div class="b">Best <span id="bs">0</span></div><div class="b" id="ex"></div></div>
+  <div class="r"><button data-m="0">1 Orbit</button><button data-m="1">2 Tower</button></div>
+</div>
+<div class="net"><b>404</b>No internet <i>▂▄▆█ ✕</i><small>ERR_INTERNET_DISCONNECTED</small></div>
+<div class="help" id="help"></div>
 <div id="msg"><b id="mt"></b><span id="ms"></span></div>
 </div>
 <script>
-const W=400,H=225,S=6,GY=195,G=0.15,R=4.5,SX=52,SY=150,PX=SX,PY=SY-6,MAXPULL=26,POWER=0.27;
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');cv.width=W;cv.height=H;
+const W=400,H=225,$=id=>document.getElementById(id);
+const cv=$('c'),ctx=cv.getContext('2d');cv.width=W;cv.height=H;
 function fit(){let k=Math.min(innerWidth/W,innerHeight/H);if(k>=1)k=Math.floor(k);cv.style.width=W*k+'px';cv.style.height=H*k+'px'}
 addEventListener('resize',fit);fit();
 
-// ---------- pre-rendered 1-bit background ----------
-const bg=document.createElement('canvas');bg.width=W;bg.height=H;
-(function(){
-  const g=bg.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,W,H);g.fillStyle='#000';
-  const M=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
-  for(let y=70;y<GY;y++){const d=(y-70)/(GY-70)*0.5;for(let x=0;x<W;x++)if(M[y&3][x&3]/16<d)g.fillRect(x,y,1,1)}
-  [[40,28],[170,50],[300,22]].forEach(([x,y])=>{
-    const p=[[0,6,26,8],[5,2,14,12],[13,0,10,12]];
+let best=[0,0];try{best=JSON.parse(localStorage.getItem('og_best'))||best}catch(e){}
+const keys={};let mode=0,parts=[],shake=0,over=false,score=0;
+
+// ---------- backgrounds ----------
+function mk(f){const c=document.createElement('canvas');c.width=W;c.height=H;f(c.getContext('2d'));return c}
+const BAY=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
+const skyBg=mk(g=>{g.fillStyle='#fff';g.fillRect(0,0,W,H);g.fillStyle='#000';
+  for(let y=60;y<H;y++){const d=(y-60)/(H-60)*.42;for(let x=0;x<W;x++)if(BAY[y&3][x&3]/16<d)g.fillRect(x,y,1,1)}
+  [[40,28],[200,46],[320,20]].forEach(([x,y])=>{const p=[[0,6,26,8],[5,2,14,12],[13,0,10,12]];
     g.fillStyle='#000';p.forEach(([a,b,w,h])=>g.fillRect(x+a-1,y+b-1,w+2,h+2));
-    g.fillStyle='#fff';p.forEach(([a,b,w,h])=>g.fillRect(x+a,y+b,w,h));
-  });
-  g.fillStyle='#000';g.fillRect(0,GY,W,H-GY);
-  g.fillStyle='#fff';
-  for(let x=0;x<W;x+=4){g.fillRect(x,GY+3,2,1);g.fillRect(x+2,GY+8,2,1);g.fillRect(x,GY+14,1,1)}
-})();
+    g.fillStyle='#fff';p.forEach(([a,b,w,h])=>g.fillRect(x+a,y+b,w,h))})});
+const starBg=mk(g=>{g.fillStyle='#000';g.fillRect(0,0,W,H);g.fillStyle='#fff';
+  for(let i=0;i<70;i++){const s=Math.random()<.15?2:1;g.fillRect(Math.random()*W|0,Math.random()*H|0,s,s)}});
+const pat=(rows)=>{const c=document.createElement('canvas');c.width=c.height=2;const g=c.getContext('2d');
+  g.fillStyle='#000';rows.forEach((r,y)=>[...r].forEach((v,x)=>v==='1'&&g.fillRect(x,y,1,1)));return ctx.createPattern(c,'repeat')};
+const P1=pat(['10','01']),P2=pat(['10','00']);
 
-// ---------- the 404 tower ----------
-const FONT={'4':['10010','10010','10010','11111','00010','00010','00010'],
-            '0':['01110','10001','10001','10001','10001','10001','01110']};
-const COLS=19,ROWS=9,X0=W-24-COLS*S,TOP=GY-ROWS*S;
-let grid,loose,parts,trail,bird,state,birdsLeft,score,timer,shake,needSettle,drag;
+// ---------- shared ----------
+function setScore(s){score=s;if(s>best[mode]){best[mode]=s;try{localStorage.setItem('og_best',JSON.stringify(best))}catch(e){}}}
+function spark(x,y,n,vx=0,vy=0){for(let i=0;i<n;i++)parts.push({x,y,vx:vx*.2+(Math.random()-.5)*3,vy:vy*.2+(Math.random()-.8)*3,life:18+Math.random()*14|0})}
+function end(t){over=true;$('mt').textContent=t;$('ms').textContent='Score '+score+' - Best '+best[mode]+' - click to retry';$('msg').style.display='flex'}
+const adiff=(a,b)=>{let d=a-b;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;return d};
 
-function put(c,r,hp,digit){grid[r][c]={c,r,x:X0+c*S,y:TOP+r*S,hp,max:hp,digit,flash:0}}
-function build(){
-  grid=Array.from({length:ROWS},()=>Array(COLS).fill(null));
-  for(let r=7;r<9;r++)for(let c=0;c<COLS;c++)put(c,r,3,false);          // plinth
-  ['4','0','4'].forEach((d,i)=>FONT[d].forEach((row,ry)=>{
-    for(let cx=0;cx<5;cx++)if(row[cx]==='1')put(1+i*6+cx,ry,2,true);
-  }));
-}
-function reset(){
-  build();loose=[];parts=[];trail=[];score=0;birdsLeft=6;shake=0;needSettle=false;drag=false;
-  document.getElementById('msg').style.display='none';spawn();
-}
-function spawn(){
-  if(birdsLeft<=0){bird=null;state='wait';timer=60;return}
-  birdsLeft--;bird={x:PX,y:PY,vx:0,vy:0,age:0,still:0};state='ready';updHud();
-}
-function updHud(){document.getElementById('sc').textContent=score;
-  document.getElementById('bl').textContent=(birdsLeft+(bird&&state==='ready'?1:0))+'';}
+// ---------- ORBIT KEEPER ----------
+const CX=200,CY=112,GM=90;
+const Orbit={
+  name:'Score',help:'Move the pointer to swing the shield - or use arrow keys / A D',fg:'#fff',
+  init(){this.ang=this.tgt=-Math.PI/2;this.rocks=[];this.lives=3;this.cd=40;this.arc=1.35},
+  move(x,y){this.tgt=Math.atan2(y-CY,x-CX)},down(x,y){this.move(x,y)},
+  spawn(lvl){
+    const th=Math.random()*6.283;let x=CX+Math.cos(th)*260,y=CY+Math.sin(th)*260;
+    x=Math.max(-10,Math.min(W+10,x));y=Math.max(-10,Math.min(H+10,y));
+    const tx=CX+(Math.random()-.5)*100,ty=CY+(Math.random()-.5)*100,d=Math.hypot(tx-x,ty-y),
+          sp=.9+Math.min(1.5,lvl*.1)+Math.random()*.3;
+    this.rocks.push({x,y,vx:(tx-x)/d*sp,vy:(ty-y)/d*sp,r:2+(Math.random()*2|0)});
+  },
+  step(){
+    const lvl=Math.floor(score/8);this.arc=Math.max(.75,1.35-lvl*.045);
+    const k=(keys.ArrowRight||keys.d?1:0)-(keys.ArrowLeft||keys.a?1:0);if(k)this.tgt=this.ang+k*.3;
+    this.ang+=Math.max(-.14,Math.min(.14,adiff(this.tgt,this.ang)));
+    if(--this.cd<=0){this.cd=Math.max(24,95-lvl*6);const n=lvl>=3&&Math.random()<.25?2:1;for(let i=0;i<n;i++)this.spawn(lvl)}
+    for(let i=this.rocks.length-1;i>=0;i--){
+      const r=this.rocks[i];let dx=CX-r.x,dy=CY-r.y,d=Math.hypot(dx,dy)||1;
+      const a=GM/(d*d+30);r.vx+=a*dx/d;r.vy+=a*dy/d;if(d<110){r.vx*=.998;r.vy*=.998}
+      r.x+=r.vx;r.y+=r.vy;d=Math.hypot(CX-r.x,CY-r.y);
+      const ang=Math.atan2(r.y-CY,r.x-CX);
+      if(d<31&&d>17&&Math.abs(adiff(ang,this.ang))<this.arc/2){setScore(score+1);spark(r.x,r.y,6,-r.vx,-r.vy);shake=2;this.rocks.splice(i,1)}
+      else if(d<14){this.lives--;spark(r.x,r.y,14);shake=7;this.rocks.splice(i,1);if(this.lives<=0)end('PLANET LOST')}
+      else if(d>340)this.rocks.splice(i,1);
+    }
+  },
+  draw(){
+    ctx.drawImage(starBg,0,0);ctx.fillStyle='#fff';
+    for(let a=0;a<6.283;a+=.07)ctx.fillRect(Math.round(CX+Math.cos(a)*34),Math.round(CY+Math.sin(a)*34),1,1);
+    for(let y=-12;y<=12;y++){const w=Math.floor(Math.sqrt(144-y*y));ctx.fillRect(CX-w,CY+y,w*2+1,1)}
+    ctx.fillStyle='#000';[[-5,-5],[4,-2],[-2,5],[6,6],[-8,2]].forEach(([x,y])=>ctx.fillRect(CX+x,CY+y,2,2));
+    if(this.lives<3)for(let i=0;i<(3-this.lives)*7;i++)ctx.fillRect(CX-10+i*2,CY-8+(i*5%14),1,3);
+    ctx.fillStyle='#fff';
+    for(let a=this.ang-this.arc/2;a<=this.ang+this.arc/2;a+=.02)for(let rr=25;rr<=28;rr++)
+      ctx.fillRect(Math.round(CX+Math.cos(a)*rr),Math.round(CY+Math.sin(a)*rr),1,1);
+    for(const r of this.rocks){const x=Math.round(r.x),y=Math.round(r.y);ctx.fillStyle='#fff';ctx.fillRect(x-r.r,y-r.r,r.r*2,r.r*2);
+      ctx.fillStyle='#000';ctx.fillRect(x,y,1,1)}
+  },
+  hud(){return 'Lives '+'■'.repeat(Math.max(0,this.lives))}
+};
 
-// ---------- helpers ----------
-function spark(x,y,n,vx=0,vy=0){for(let i=0;i<n;i++)parts.push({x,y,vx:vx*.2+(Math.random()-.5)*3,vy:vy*.2+(Math.random()-.8)*3,life:20+Math.random()*15|0})}
-function destroy(b,vx,vy){
-  grid[b.r][b.c]=null;
-  loose.push({x:b.x,y:b.y,vx:vx*.5+(Math.random()-.5),vy:vy*.5-Math.random()*1.5,digit:b.digit,chunk:true});
-  score+=b.digit?100:50;spark(b.x+S/2,b.y+S/2,5,vx,vy);needSettle=true;shake=3;
-}
-function hit(b,dmg,vx,vy){
-  b.hp-=dmg;
-  if(b.hp<=0){destroy(b,vx,vy);return true}
-  b.flash=4;score+=10;spark(b.x+S/2,b.y+S/2,2,vx,vy);return false;
-}
-function settle(){ // anything not connected to the ground row falls
-  const seen=Array.from({length:ROWS},()=>Array(COLS).fill(false)),q=[];
-  for(let c=0;c<COLS;c++)if(grid[ROWS-1][c]){seen[ROWS-1][c]=true;q.push([c,ROWS-1])}
-  while(q.length){const [c,r]=q.pop();
-    [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dc,dr])=>{const a=c+dc,b=r+dr;
-      if(a>=0&&a<COLS&&b>=0&&b<ROWS&&grid[b][a]&&!seen[b][a]){seen[b][a]=true;q.push([a,b])}})}
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const b=grid[r][c];
-    if(b&&!seen[r][c]){grid[r][c]=null;loose.push({x:b.x,y:b.y,vx:(Math.random()-.3)*.5,vy:0,digit:b.digit,chunk:false})}}
-}
-function digitsLeft(){let n=0;for(const row of grid)for(const b of row)if(b&&b.digit)n++;
-  for(const l of loose)if(l.digit)n++;return n}
+// ---------- GHOST TOWER ----------
+const BH=10,GRD=213;
+const Tower={
+  name:'Floors',help:'Click / tap / space to drop the block - line it up!',fg:'#000',
+  init(){this.f=[{x:155,w:90}];this.cam=0;this.t=0;this.perf=0;this.deb=[];this.nb()},
+  nb(){const n=this.f.length,w=this.f[n-1].w;this.b={x:n%2?10:W-10-w,y:GRD-(n+1)*BH,w,d:n%2?1:-1}},
+  move(){},
+  down(){
+    const p=this.f[this.f.length-1],b=this.b,L=Math.max(b.x,p.x),Rr=Math.min(b.x+b.w,p.x+p.w),ov=Rr-L;
+    if(ov<=0){this.deb.push({x:b.x,y:b.y,w:b.w,vx:b.d*.5,vy:0});this.b=null;end('TOWER FELL');return}
+    let nx=L,nw=ov;
+    if(Math.abs(b.x-p.x)<=2){nx=p.x;nw=p.w;this.perf++;
+      if(this.perf>=3&&nw<90){nw=Math.min(90,nw+4);nx-=2}
+      spark(nx+nw/2,b.y+this.cam,10);shake=2}
+    else{this.perf=0;
+      if(b.x<p.x)this.deb.push({x:b.x,y:b.y,w:p.x-b.x,vx:-.5,vy:0});
+      if(b.x+b.w>p.x+p.w)this.deb.push({x:p.x+p.w,y:b.y,w:b.x+b.w-p.x-p.w,vx:.5,vy:0})}
+    this.f.push({x:nx,w:nw});setScore(this.f.length-1);this.nb();
+  },
+  step(){
+    this.t++;const n=this.f.length,b=this.b;
+    let sp=1.1+Math.min(3.2,n*.07);if(n>8)sp*=1+.35*Math.sin(this.t*.04);
+    b.x+=b.d*sp;
+    if(b.x<10){b.x=10;b.d=1}if(b.x+b.w>W-10){b.x=W-10-b.w;b.d=-1}
+    this.cam+=(Math.max(0,n*BH-113)-this.cam)*.08;
+  },
+  block(x,y,w,i){
+    x=Math.round(x);w=Math.round(w);ctx.fillStyle='#000';ctx.fillRect(x,y,w,BH);
+    ctx.fillStyle=i%2?P1:P2;ctx.fillRect(x+1,y+1,w-2,BH-2);
+    ctx.fillStyle='#fff';ctx.fillRect(x+1,y+1,w-2,1)
+  },
+  draw(){
+    ctx.drawImage(skyBg,0,0);const cy=Math.round(this.cam);
+    ctx.fillStyle='#000';ctx.fillRect(0,GRD+cy,W,H);
+    ctx.fillStyle='#fff';for(let x=0;x<W;x+=4)ctx.fillRect(x,GRD+cy+3,2,1);
+    this.f.forEach((f,i)=>{const y=GRD-(i+1)*BH+cy;if(y>-BH&&y<H){this.block(f.x,y,f.w,i);
+      if((i+1)%10===0){ctx.fillStyle='#000';ctx.fillRect(0,y+4,8,2);ctx.fillRect(W-8,y+4,8,2)}}});
+    for(const d of this.deb){d.vy+=.25;d.y+=d.vy;d.x+=d.vx;ctx.globalAlpha=.8;this.block(d.x,d.y+cy,d.w,1);ctx.globalAlpha=1}
+    this.deb=this.deb.filter(d=>d.y+cy<H+20);
+    const b=this.b;if(b){const x=Math.round(b.x),y=b.y+cy;ctx.fillStyle='#000';ctx.fillRect(x-1,y-1,b.w+2,BH+2);
+      ctx.fillStyle='#fff';ctx.fillRect(x+1,y+1,b.w-2,BH-2)}
+  },
+  hud(){return this.perf?'Combo x'+this.perf:''}
+};
 
-// ---------- input ----------
+// ---------- engine ----------
+const M=[Orbit,Tower];
+function start(m){
+  mode=m;over=false;score=0;parts=[];shake=0;$('msg').style.display='none';M[m].init();
+  $('lab').textContent=M[m].name;$('help').textContent=M[m].help;
+  document.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.m===m));
+}
+document.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{start(+b.dataset.m);b.blur()}));
 function pos(e){const r=cv.getBoundingClientRect();return[(e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*H]}
-cv.addEventListener('pointerdown',e=>{
-  if(state!=='ready')return;const [x,y]=pos(e);
-  if(Math.hypot(x-bird.x,y-bird.y)<20){drag=true;cv.setPointerCapture(e.pointerId)}
+cv.addEventListener('pointerdown',e=>{if(over)return;const [x,y]=pos(e);M[mode].down(x,y)});
+cv.addEventListener('pointermove',e=>{if(over)return;const [x,y]=pos(e);M[mode].move(x,y)});
+$('msg').addEventListener('click',()=>start(mode));
+addEventListener('keydown',e=>{
+  keys[e.key]=true;
+  if(e.key==='1')start(0);else if(e.key==='2')start(1);
+  else if(e.key==='Tab'){e.preventDefault();start(1-mode)}
+  else if(e.key==='r'||e.key==='R')start(mode);
+  else if(e.key===' '||e.key==='Enter'){e.preventDefault();if(over)start(mode);else if(mode===1)M[1].down()}
 });
-cv.addEventListener('pointermove',e=>{
-  if(!drag)return;const [x,y]=pos(e);let dx=x-PX,dy=y-PY;const d=Math.hypot(dx,dy);
-  if(d>MAXPULL){dx*=MAXPULL/d;dy*=MAXPULL/d}
-  bird.x=PX+dx;bird.y=Math.min(PY+dy,GY-R-1);
-});
-cv.addEventListener('pointerup',()=>{
-  if(!drag)return;drag=false;
-  const dx=PX-bird.x,dy=PY-bird.y;
-  if(Math.hypot(dx,dy)<4){bird.x=PX;bird.y=PY;return}
-  bird.vx=dx*POWER;bird.vy=dy*POWER;state='fly';trail=[];
-});
-addEventListener('keydown',e=>{if(e.key==='r'||e.key==='R')reset()});
-document.getElementById('msg').addEventListener('click',reset);
+addEventListener('keyup',e=>{keys[e.key]=false});
 
-// ---------- physics ----------
-function stepBird(){
-  const b=bird,sp=Math.hypot(b.vx,b.vy),n=Math.max(1,Math.ceil(sp/2.5));
-  b.age++;
-  for(let k=0;k<n;k++){
-    b.vy+=G/n;b.x+=b.vx/n;b.y+=b.vy/n;
-    if(b.y+R>=GY){b.y=GY-R;b.vy*=-.35;b.vx*=.75;if(Math.abs(b.vy)<.5)b.vy=0}
-    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
-      const k2=grid[r][c];if(!k2)continue;
-      const cx=Math.max(k2.x,Math.min(b.x,k2.x+S)),cy=Math.max(k2.y,Math.min(b.y,k2.y+S));
-      let dx=b.x-cx,dy=b.y-cy,d=Math.hypot(dx,dy);
-      if(d>=R)continue;
-      if(d<1e-6){dx=b.x-(k2.x+S/2);dy=b.y-(k2.y+S/2);d=Math.hypot(dx,dy)||1}
-      const nx=dx/d,ny=dy/d,s=Math.hypot(b.vx,b.vy),dmg=Math.floor(s*.35);
-      const killed=dmg>0&&hit(k2,dmg,b.vx,b.vy);
-      if(killed){b.vx*=.78;b.vy*=.78}
-      else{
-        b.x+=nx*(R-d);b.y+=ny*(R-d);
-        const vn=b.vx*nx+b.vy*ny;if(vn<0){b.vx-=1.3*vn*nx;b.vy-=1.3*vn*ny}
-        b.vx*=.8;b.vy*=.8;
-      }
-    }
-  }
-  if(b.age%3===0)trail.push([b.x,b.y]);if(trail.length>14)trail.shift();
-  const slow=Math.hypot(b.vx,b.vy)<.3&&b.y+R>=GY-.5;
-  b.still=slow?b.still+1:0;
-  if(b.still>40||b.x>W+20||b.x<-20||b.y>H+20||b.age>600){bird=null;state='wait';timer=45;trail=[]}
-}
-function stepLoose(){
-  for(let i=loose.length-1;i>=0;i--){
-    const l=loose[i];l.vy+=G;l.x+=l.vx;l.y+=l.vy;let dead=false;
-    if(l.y+S>=GY||l.x<-20||l.x>W+20)dead=true;
-    else if(!l.chunk){
-      const c=Math.floor((l.x+S/2-X0)/S),r=Math.floor((l.y+S-TOP)/S);
-      if(r>=0&&r<ROWS&&c>=0&&c<COLS&&grid[r][c]){
-        const t=grid[r][c];if(hit(t,1,0,l.vy))needSettle=true;dead=true;
-      }
-    }
-    if(dead){spark(l.x+S/2,Math.min(l.y+S,GY),4);loose.splice(i,1)}
-  }
-}
 function step(){
-  for(const row of grid)for(const b of row)if(b&&b.flash>0)b.flash--;
-  if(state==='fly'&&bird)stepBird();
-  stepLoose();
-  for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.vy+=.12;p.x+=p.vx;p.y+=p.vy;if(--p.life<=0||p.y>GY)parts.splice(i,1)}
-  if(needSettle){needSettle=false;settle()}
+  if(!over)M[mode].step();
+  for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.vy+=.12;p.x+=p.vx;p.y+=p.vy;if(--p.life<=0)parts.splice(i,1)}
   if(shake>0)shake--;
-  updHud();
-  if(state==='over')return;
-  if(digitsLeft()===0&&loose.length===0)return over(true);
-  if(state==='wait'){
-    if(--timer<=0&&loose.length===0){if(birdsLeft>0)spawn();else over(false)}
-  }
-}
-function over(win){
-  state='over';
-  document.getElementById('mt').textContent=win?'404 NOT FOUND':'GAME OVER';
-  document.getElementById('ms').textContent=(win?'Tower destroyed! ':'Out of birds. ')+'Score '+score+' - click to play again';
-  document.getElementById('msg').style.display='flex';
-}
-
-// ---------- drawing ----------
-const SPR=["..#####..",".#######.","#########","##ww#ww##","##w#.#w##","####w####","###www###",".#######.","..#####.."];
-function sprite(x,y){
-  const px=Math.round(x)-4,py=Math.round(y)-4;
-  ctx.fillStyle='#fff';ctx.fillRect(px-1,py+1,11,7);ctx.fillRect(px+1,py-1,7,11);
-  for(let r=0;r<9;r++)for(let c=0;c<9;c++){const ch=SPR[r][c];if(ch==='.')continue;
-    ctx.fillStyle=ch==='#'?'#000':'#fff';ctx.fillRect(px+c,py+r,1,1)}
-}
-function line(x0,y0,x1,y1,w){const n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0))||1;
-  for(let i=0;i<=n;i++)ctx.fillRect(Math.round(x0+(x1-x0)*i/n),Math.round(y0+(y1-y0)*i/n),w,w)}
-function drawBlock(b){
-  const x=b.x,y=b.y;
-  if(b.flash>0){ctx.fillStyle='#fff';ctx.fillRect(x,y,S,S);ctx.fillStyle='#000';
-    ctx.fillRect(x,y,S,1);ctx.fillRect(x,y+S-1,S,1);ctx.fillRect(x,y,1,S);ctx.fillRect(x+S-1,y,1,S);return}
-  ctx.fillStyle='#000';ctx.fillRect(x,y,S,S);
-  ctx.fillStyle='#fff';
-  if(b.digit){ctx.fillRect(x+1,y+1,S-3,1);ctx.fillRect(x+1,y+1,1,S-3)}
-  else{ctx.fillRect(x+1,y+1,1,1);ctx.fillRect(x+3,y+1,1,1);ctx.fillRect(x+2,y+3,1,1);ctx.fillRect(x+4,y+3,1,1)}
-  if(b.hp<b.max){ctx.fillRect(x+2,y+2,1,1);ctx.fillRect(x+3,y+3,1,1);ctx.fillRect(x+3,y+4,1,1);ctx.fillRect(x+4,y+2,1,1)}
+  $('sc').textContent=score;$('bs').textContent=best[mode];$('ex').textContent=M[mode].hud();
+  $('ex').style.display=$('ex').textContent?'block':'none';
 }
 function draw(){
   const sx=shake?Math.round((Math.random()-.5)*3):0,sy=shake?Math.round((Math.random()-.5)*3):0;
-  ctx.setTransform(1,0,0,1,sx,sy);
-  ctx.drawImage(bg,0,0);
-  // sling post + back arm
-  ctx.fillStyle='#000';
-  line(SX,GY,SX,SY+6,3);line(SX,SY+6,SX-8,SY-10,3);line(SX,SY+6,SX+8,SY-10,3);
-  if(drag&&bird){ // bands + aim preview
-    ctx.fillStyle='#000';line(SX-8,SY-10,bird.x,bird.y,1);line(SX+8,SY-10,bird.x,bird.y,1);
-    let x=bird.x,y=bird.y,vx=(PX-bird.x)*POWER,vy=(PY-bird.y)*POWER;
-    for(let i=1;i<=45;i++){vy+=G;x+=vx;y+=vy;if(y>GY)break;if(i%4===0)ctx.fillRect(Math.round(x)-1,Math.round(y)-1,2,2)}
-  }
-  for(const row of grid)for(const b of row)if(b)drawBlock(b);
-  for(const l of loose)drawBlock({x:l.x,y:l.y,hp:2,max:2,digit:l.digit,flash:0});
-  ctx.fillStyle='#000';trail.forEach(t=>ctx.fillRect(Math.round(t[0]),Math.round(t[1]),1,1));
-  if(bird)sprite(bird.x,bird.y);
-  // front arm of the sling
-  ctx.fillStyle='#000';line(SX,SY+6,SX-8,SY-10,3);
-  ctx.fillStyle='#000';
-  for(const p of parts)ctx.fillRect(Math.round(p.x),Math.round(p.y),2,2);
+  ctx.setTransform(1,0,0,1,sx,sy);M[mode].draw();
+  ctx.fillStyle=M[mode].fg;for(const p of parts)ctx.fillRect(Math.round(p.x),Math.round(p.y),2,2);
 }
 let last=performance.now(),acc=0;
-function frame(t){acc+=Math.min(100,t-last);last=t;
-  while(acc>=16.667){step();acc-=16.667}
-  draw();requestAnimationFrame(frame)}
-reset();requestAnimationFrame(frame);
+function frame(t){acc+=Math.min(100,t-last);last=t;while(acc>=16.667){step();acc-=16.667}draw();requestAnimationFrame(frame)}
+$('ex').className='b';start(0);requestAnimationFrame(frame);
 </script>
 </body>
 </html>
