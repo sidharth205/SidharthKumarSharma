@@ -5,7 +5,7 @@
 <script>if(!matchMedia('(prefers-reduced-motion:reduce)').matches)document.documentElement.className='intro hold'</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Sidharth Kumar Sharma — Backend Engineer</title>
-<link rel="icon" href="./favicon.png" type="image/png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32'%3E%3Crect width='32' height='32' rx='6' fill='%23001219'/%3E%3Cpath d='M7 10L13 16L7 22' stroke='%239b2226' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M16 10H21M16 16H20M16 22H21' stroke='%23e9d8a6' stroke-width='2' stroke-linecap='round'/%3E%3Crect x='23' y='20' width='2' height='3' fill='%23ee9b00' rx='0.5'/%3E%3C/svg%3E" type="image/svg+xml">
 <meta name="description" content="Sidharth Kumar Sharma, a computer science undergraduate in Kolkata building backend systems, REST APIs and full-stack applications.">
 <meta name="theme-color" content="#e9d8a6">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,7 +25,7 @@ a{color:inherit}
 /* HUD + section indicator */
 .hud{position:fixed;inset:0 0 auto;z-index:30;display:flex;justify-content:space-between;padding:calc(16px + env(safe-area-inset-top)) var(--pad) 0;pointer-events:none}
 .hud{align-items:center}.hud b{font-weight:700}
-.hl{display:flex;gap:8px}.hl a{pointer-events:auto;text-decoration:none;border:1px solid currentColor;border-radius:99px;padding:5px 12px;transition:background .3s,color .3s}
+.hl{display:flex;gap:8px}.hl a{pointer-events:auto;text-decoration:none;border:1px solid currentColor;border-radius:99px;padding:5px 12px;transition:background .3s,color .3s,cursor pointer}
 .hl a:last-child{background:var(--ac);border-color:var(--ac);color:var(--bg)}.hl a:hover,.hl a:focus-visible{background:var(--fg);border-color:var(--fg);color:var(--bg)}
 .bar{position:fixed;left:0;bottom:0;height:4px;width:100%;background:var(--ac);transform-origin:0;transform:scaleX(0);z-index:30;transition:background .9s}
 #dots{position:fixed;right:max(10px,calc(var(--pad)/3));top:50%;transform:translateY(-50%);z-index:30;display:grid;gap:11px}
@@ -103,9 +103,12 @@ a{color:inherit}
 .stage{position:relative;height:62svh}
 .job{position:absolute;inset:0 0 auto;opacity:0;transform:translateY(40px);transition:opacity .6s,transform .7s var(--ease);pointer-events:none}
 .job.on{opacity:1;transform:none}
-.job h3{font-size:clamp(2.2rem,7vw,6rem);line-height:1;margin:10px 0 18px}
-.job ul{list-style:none;max-width:62ch;display:grid;gap:10px}
-.job li{padding-left:22px;position:relative}.job li::before{content:"→";position:absolute;left:0;color:var(--ac)}
+.job-header{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px;margin:10px 0 14px}
+.job h3{font-size:clamp(2.2rem,7vw,5.2rem);line-height:1;margin:0}
+.cert-link{font:500 12px/1.4 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;border:1px solid currentColor;border-radius:99px;padding:5px 14px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:background .3s,color .3s;pointer-events:auto}
+.cert-link:hover{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.job ul{list-style:none;max-width:64ch;display:grid;gap:8px}
+.job li{padding-left:22px;position:relative;font-size:clamp(.95rem,1.8vw,1.1rem);line-height:1.45}.job li::before{content:"→";position:absolute;left:0;color:var(--ac)}
 /* experience vectors, drawn by scroll */
 .xv{position:absolute;right:var(--pad);bottom:calc(26px + env(safe-area-inset-bottom));width:clamp(240px,34vw,430px);aspect-ratio:360/310;pointer-events:none}
 .xv svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;opacity:0;transition:opacity .6s;--l:0}
@@ -159,6 +162,7 @@ html.intro .hud,html.intro #dots,html.intro .bar{opacity:0}
 html.intro.go .hud,html.intro.go #dots,html.intro.go .bar{opacity:1;transition:opacity .8s .25s}
 html.intro.go body::after{opacity:.09;transition:opacity .8s}
 html.hold .hero *{animation-play-state:paused}
+
 /* ===== cursor: Figma-style pointer with a "You" tag, always visible once loaded ===== */
 #cur{display:none}
 @media (hover:hover) and (pointer:fine){
@@ -171,6 +175,15 @@ html.hold .hero *{animation-play-state:paused}
  #cur.hit .lb{background:var(--fg);transform:translateX(3px)}
  #cur.dn svg{transform:scale(.88)}
 }
+
+/* ===== Error & Offline Overlay View Styles ===== */
+.site-overlay{position:fixed;inset:0;z-index:150;background:var(--bg);color:var(--fg);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:var(--pad);text-align:center;opacity:0;pointer-events:none;transition:opacity .4s var(--ease)}
+.site-overlay.active{opacity:1;pointer-events:auto}
+.site-overlay h1{font-size:clamp(4rem,15vw,12rem);line-height:.9;margin-bottom:1rem;color:var(--ac)}
+.site-overlay h2{font-size:clamp(1.5rem,4vw,2.8rem);margin-bottom:1.5rem;max-width:24ch}
+.site-overlay p{font-size:1.1rem;max-width:40ch;opacity:.8;margin-bottom:2.5rem}
+.overlay-btn{font:500 12px/1.4 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;border:1px solid currentColor;border-radius:99px;padding:12px 28px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:background .3s,color .3s,border-color .3s;background:var(--ac);color:var(--bg);border-color:var(--ac)}
+.overlay-btn:hover{background:var(--fg);color:var(--bg);border-color:var(--fg)}
  </style>
 </head>
 <body>
@@ -203,6 +216,25 @@ html.hold .hero *{animation-play-state:paused}
       </div>
     </div>
   </div>
+
+  <!-- Custom 404 Not Found Overlay -->
+  <div id="view-404" class="site-overlay">
+    <div class="mono" style="margin-bottom:1rem">Error Code: 404</div>
+    <h1 class="serif">Lost Route</h1>
+    <h2>This endpoint doesn't exist in our routing table.</h2>
+    <p>You might have mistyped the URL or navigated to a resource that has been deprecated or relocated.</p>
+    <a href="#" class="overlay-btn" id="btn-home-404">Return to Portfolio ↵</a>
+  </div>
+
+  <!-- Custom Offline Notice Overlay -->
+  <div id="view-offline" class="site-overlay">
+    <div class="mono" style="margin-bottom:1rem">Connection Lost</div>
+    <h1 class="serif">Offline</h1>
+    <h2>The network socket has dropped.</h2>
+    <p>It looks like you've lost internet connectivity. Some live elements or external files might be unavailable until reconnected.</p>
+    <a href="#" class="overlay-btn" id="btn-retry">Retry Connection ↻</a>
+  </div>
+
 <div id="cur" aria-hidden="true"><svg width="22" height="24" viewBox="0 0 22 24"><path d="M3 2l15 9.5-6.4 1.6L8.6 20z"/></svg><span class="lb">You</span></div>
 <div class="hud mono"><b>Sidharth Kumar Sharma</b><span id="ch">01 / Intro</span><span class="hl"><a href="./Sidharth%20Kumar_Sharma_Resume.pdf" target="_blank" rel="noopener">Résumé</a><a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=rs9768401@gmail.com" target="_blank" rel="noopener">Email</a></span></div>
 <div class="bar" id="bar"></div>
@@ -223,12 +255,9 @@ html.hold .hero *{animation-play-state:paused}
   </div>
 </section>
 
-<section class="sw" data-s data-pin data-theme data-bg="#e9d8a6" data-fg="#001219" data-ac="#bb3e03" data-t="Selected Works" style="height:240svh">
+<section class="sw" data-s data-pin data-theme data-bg="#e9d8a6" data-fg="#001219" data-ac="#bb3e03" data-t="Selected Works" style="height:180svh">
   <div class="pin">
-    <div class="eyebrow mono">Up next · five things I made, told as stories</div>
     <h2 class="serif"><span>Selected</span><span>Works</span></h2>
-    <ol><li><b>01</b>The Glove That Talks</li><li><b>02</b>Six People, One API</li><li><b>03</b>Who Goes Where</li><li><b>04</b>A Library That Listens</li><li><b>05</b>Shrinking Without Losing</li></ol>
-    <div class="down mono">Keep scrolling ↓</div>
   </div>
 </section>
 
@@ -238,13 +267,30 @@ html.hold .hero *{animation-play-state:paused}
   <div class="pin">
     <div class="line"></div>
     <div class="stage">
-      <div class="job on"><div class="mono">Jul 2024 — Oct 2025 · Azmth</div><h3 class="serif">Backend Engineering Intern</h3>
-        <ul><li>Architected a multi-service backend on the Groq API, with separate Neo4j graph, real-time conversation, and stateful personality and memory services.</li>
-        <li>Built a pipeline joining ChromaDB vector search and OpenAI embeddings with Neo4j, so the system remembers users between sessions.</li>
-        <li>Grew into a senior developer in a five-member team, and shipped a production backend for an external client. Their feedback singled out precise answers and accurate session memory.</li></ul></div>
-      <div class="job"><div class="mono">Jun 2026 — Aug 2026 · EssProm Academy</div><h3 class="serif">Full-Stack Developer Intern</h3>
-        <ul><li>Built the Admin module end to end for a multi-user resource and project-management system on Node.js, Express and Supabase.</li>
-        <li>Wrote role-based access control and JWT/Supabase auth middleware alongside the shared Manager module, protecting a system that holds real user data.</li></ul></div>
+      <div class="job on">
+        <div class="mono">Jul 2024 — Oct 2025 · Azmth Technologies LLP</div>
+        <div class="job-header">
+          <h3 class="serif">Applied AI Engineer Intern</h3>
+          <a href="./Azmth_Internship_Certificate.pdf" target="_blank" rel="noopener" class="cert-link">View Certificate ↗</a>
+        </div>
+        <ul>
+          <li>Demonstrated exceptional technical leadership and systems thinking, earning recognition for driving production-grade multi-service architectures and core database schemas.</li>
+          <li>Architected robust backend pipelines integrating Groq API, ChromaDB vector search, and OpenAI embeddings with a Neo4j graph database to power stateful user memory and context-aware conversations.</li>
+          <li>Handled high ownership and reliability in a core development team, successfully delivering production solutions for external clients with rigorous data integrity and performance standards.</li>
+        </ul>
+      </div>
+      <div class="job">
+        <div class="mono">Jun 2026 — Oct 2026 · EssProm Academy</div>
+        <div class="job-header">
+          <h3 class="serif">AI App Developer Intern</h3>
+          <a href="./EssProM_Internship_Certificate.pdf" target="_blank" rel="noopener" class="cert-link">View Certificate ↗</a>
+        </div>
+        <ul>
+          <li>Successfully executed advanced development evaluations and projects leveraging Generative AI Applications via Claude and Google AI Studio.</li>
+          <li>Engineered full-stack administrative workflows and robust module logic on Node.js, Express, and Supabase, securing routes with JWT auth and role-based access control.</li>
+          <li>Delivered scalable production architectures combining modern cloud databases with rapid AI-assisted development paradigms.</li>
+        </ul>
+      </div>
     </div>
     <div class="xv" aria-hidden="false"><svg id="xa" class="on" viewBox="0 0 360 310" role="img" aria-label="Azmth: Groq API, memory service, Neo4j graph, ChromaDB vectors, client session">
 <path class="ln" pathLength="1" style="--a:.15" d="M180 44V120"/>
@@ -291,8 +337,8 @@ html.hold .hero *{animation-play-state:paused}
       <div><span>QSpider</span><span>Java &amp; SQL Training · 2026</span></div>
     </div>
     <div class="links mono">
-      <a href="./Sidharth%20Kumar_Sharma_Resume.pdf">Résumé</a><a href="https://github.com/sidharth205" rel="noopener">GitHub</a>
-      <a href="https://linkedin.com/in/sidharth-sharma205" rel="noopener">LinkedIn</a><a href="https://leetcode.com/u/Sidharth_Sharma1234/" rel="noopener">LeetCode</a><a href="tel:+919836417005">+91 98364 17005</a>
+      <a href="./Sidharth%20Kumar_Sharma_Resume.pdf" target="_blank" rel="noopener">Résumé</a><a href="https://github.com/sidharth205" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://linkedin.com/in/sidharth-sharma205" target="_blank" rel="noopener">LinkedIn</a><a href="https://leetcode.com/u/Sidharth_Sharma1234/" target="_blank" rel="noopener">LeetCode</a><a href="tel:+919836417005">+91 98364 17005</a>
     </div>
   </div>
 </section>
@@ -300,47 +346,47 @@ html.hold .hero *{animation-play-state:paused}
 <script>
 /* theme: bg, fg, accent | beats: itch, build, twist, result */
 const P=[
-{n:"Glove",k:"IoT + Machine Learning",t:"The Glove That Talks",fig:"97%",cap:"gesture accuracy",th:["#005f73","#e9d8a6","#94d2bd"],
-  b:["Sign language is a whole language, and most people around you never learned it. I wanted a hand to be able to speak straight into a speaker.",
+{n:"Sign Language Glove",k:"IoT + Machine Learning",t:"Sign Language Interpreter",fig:"97%",cap:"gesture accuracy",th:["#005f73","#e9d8a6","#94d2bd"],
+  b:["Communication between the Deaf and Hard-of-Hearing (DHH) community and non-signing individuals remains a major challenge due to the limited understanding and accessibility of Indian Sign Language (ISL).Existing Sign Language Recognition (SLR) systems are often unable to provide reliable, real-time communication because of high latency, environmental dependency, limited gesture recognition capability, and poor sensor durability.",
     "An ESP32 on a glove streams sensor readings. The stream gets cleaned, then a neural network, trained on 12 gestures, decides which word the hand just said.",
-    "Sensors are liars. A shaky finger looks like a brand new word, so most of the real work was teaching the pipeline what to ignore.",
-    "97% accuracy across 12 gestures, and the glove speaks in 0.2 to 0.7 seconds, quick enough to feel like a conversation."],
-  f:["Sensors on the glove","ESP32 streams data","Noise filtered out","Neural net: 12 gestures","Speech out in ~0.5s"],s:"ESP32 · Python · TensorFlow"},
-{n:"Civic App",k:"Full-stack · Team lead",t:"Six People, One API",fig:"6",cap:"teammates led, SIH 2025",th:["#ee9b00","#001219","#9b2226"],
-  b:["Problems in a city are easy to spot and strangely hard to report. Smart India Hackathon 2025 gave us a deadline and a mission: close that gap.",
-    "I led a team of six and built the FastAPI backend, about 10 REST endpoints with full CRUD on Supabase and PostgreSQL. The Flutter app talks to it through Ngrok-exposed APIs.",
-    "With six people building in parallel, the API was the contract everyone leaned on. If the endpoints moved, the app would fall over, so keeping them steady was the job.",
-    "A working civic reporting app, from phone to database, built under hackathon pressure with me leading the team."],
-  f:["Citizen reports an issue","Flutter app","Ngrok tunnel","FastAPI · ~10 endpoints","Supabase / PostgreSQL"],s:"FastAPI · Flutter · Supabase"},
-{n:"EssProm",k:"Backend · Internship build",t:"Who Goes Where",fig:"RBAC",cap:"JWT + Supabase auth",th:["#bb3e03","#e9d8a6","#001219"],
-  b:["Teams need to assign tasks, track progress and collect timesheets, and managers need one honest view of all of it.",
-    "At EssProm Academy I built the Admin module end to end on Node.js, Express and Supabase, with custom REST APIs behind task assignment, tracking and centralized reporting.",
+    "Like all current existing solutions even a slight change in sensor position gives a whole new word output, so most of the real work was teaching the pipeline what to ignore and making the hardware durable to withstand real-world settings.",
+    "97% accuracy across 12 gestures, and development is still on. The glove speaks in 0.2 to 0.7 seconds, quick enough to feel like a conversation."],
+  f:["Sensors on the glove","ESP32 streams data","Noise filtered out","Neural net: 12 gestures","Speech out in ~0.5s"],s:"ESP32 · Python · TensorFlow",repo:"https://github.com/sidharth205/sign-language-glove"},
+{n:"Civic App",k:"Full-stack",t:"Civic Issue Reporting App",fig:"20+",cap:"Issues Reported with 90% location accuracy",th:["#ee9b00","#001219","#9b2226"],
+  b:["Problems in a city are easy to spot and strangely hard to report. Smart India Hackathon 2025 gave us a deadline and an opportunity to try and close that gap.",
+    "We made a mobile first flutter app that lets citizens report civic issues with a photo, description and location. A FastAPI backend stores the reports in a Supabase database.",
+    "The major challenge was to get the location right. We used a combination of GPS, Google Maps API and reverse geocoding to get the most accurate location possible.",
+    "A working civic reporting app, from phone to database, which can be used if provided with an actual civic authority to receive the reports."],
+  f:["Citizen reports an issue","Flutter app","Ngrok tunnel","FastAPI ","Supabase / PostgreSQL"],s:"FastAPI · Flutter · Supabase",repo:"https://github.com/sidharth205/Civic-report-app"},
+{n:"EssProm",k:"AI Application Developer",t:"Resource Management System",fig:"RBAC",cap:"JWT + Supabase auth",th:["#bb3e03","#e9d8a6","#001219"],
+  b:["At EssProM Academy I was tasked with building a resource management system to help managers assign tasks to employees and track their progress. The system had to be secure, scalable and easy to use.",
+    "I built the Admin module defined business rules and managed permissions of each type of employee in the system. Built end to end on Node.js, Express and Supabase, with custom REST APIs behind task assignment, tracking and centralized reporting.",
     "The system holds real user data, so every route has to ask two questions: who are you, and are you allowed? I wrote that gate as JWT and Supabase auth middleware with role-based access.",
-    "A secured Admin module, delivered alongside the shared Manager module in a single summer."],
-  f:["Request arrives","JWT verified","Role checked (RBAC)","Express REST route","Supabase query"],s:"Node.js · Express · Supabase · JWT"},
-{n:"Library AI",k:"Web · NLP",t:"A Library That Listens",fig:"LLM",cap:"chatbot + recommender",th:["#94d2bd","#001219","#bb3e03"],
+    "A secured Admin module, delivered alongside the complete system."],
+  f:["Request arrives","JWT verified","Role checked (RBAC)","Express REST route","Supabase query"],s:"Node.js · Express · Supabase · JWT",repo:"https://github.com/sidharth205/resource-management-system"},
+{n:"Library AI",k:"Web · NLP",t:"AI Powered Library Management System",fig:"LLM",cap:"chatbot + recommender",th:["#94d2bd","#001219","#bb3e03"],
   b:["Librarians answer the same questions all day, and readers rarely find books they would love by luck alone.",
     "A web platform on Flask, PHP and MySQL, with an LLM chatbot built on LangChain. An NLP recommender reads each reader's borrowing history and suggests what to read next.",
     "Two worlds in one product. PHP serves the pages and Python does the thinking, so the real puzzle was getting them to cooperate cleanly.",
     "Personalized recommendations for readers, and fewer manual queries landing on staff."],
-  f:["Reader borrows books","History stored in MySQL","NLP finds similar tastes","LangChain chatbot answers","Next book suggested"],s:"Flask · PHP · MySQL · LangChain"},
-{n:"Huffman",k:"Desktop · Algorithms",t:"Shrinking Without Losing",fig:"0 loss",cap:"lossless compression",th:["#0a9396","#001219","#e9d8a6"],
+  f:["Reader borrows books","History stored in MySQL","NLP finds similar tastes","LangChain chatbot answers","Next book suggested"],s:"Flask · PHP · MySQL · LangChain",repo:"https://github.com/sidharth205/ai-library-management"},
+{n:"Huffman",k:"Desktop · Algorithms",t:"Desktop File Compression Tool",fig:"0 loss",cap:"lossless compression",th:["#0a9396","#001219","#e9d8a6"],
   b:["How do you make a file smaller without losing a single byte? Give common bytes short codes, rare bytes long ones.",
     "Count how often each byte appears, then repeatedly merge the two rarest into a tree. Walk it: left is 0, right is 1. A Java Swing app wraps it in drag-and-drop.",
     "The decoder needs the exact same tree, so the file stores its frequency table up front. Rebuild the tree, and every bit decodes back to the original.",
     "A desktop compressor that restores files byte for byte, built to put algorithm design beside hands-on UI work."],
-  f:["Read the bytes","Count frequencies","Merge rarest in a min-heap","Left 0, right 1","Write the .huff file"],s:"Java · Swing · Huffman coding"}];
-const L=["The itch","The build","The twist","The result"];
+  f:["Read the bytes","Count frequencies","Merge rarest in a min-heap","Left 0, right 1","Write the .huff file"],s:"Java · Swing · Huffman coding",repo:"https://github.com/sidharth205/huffman-file-compression"}];
+const L=["The Problem","The build","The Challenges","The result"];
 document.getElementById('projects').innerHTML=P.map((p,i)=>`<section class="proj" data-s data-pin data-theme data-bg="${p.th[0]}" data-fg="${p.th[1]}" data-ac="${p.th[2]}" data-t="${p.n}" style="height:300svh"><div class="pin"><div class="ghost serif">0${i+1}</div><div class="pgrid"><div class="story">
 <div class="beat"><div class="mono">0${i+1} / 05 · ${p.k}</div><h3 class="serif">${p.t}</h3><div class="fig serif">${p.fig}</div><div class="cap mono">${p.cap}</div></div>
 ${p.b.map((x,j)=>`<div class="beat"><div class="mono lab">${L[j]}</div><p>${x}</p></div>`).join('')}</div>
 <ol class="flow">${p.f.map(x=>`<li>${x}</li>`).join('')}</ol></div>
-<div class="ptags mono"><span>${p.s}</span><a href="https://github.com/sidharth205" rel="noopener">Code ↗</a></div></div></section>`).join('');
+<div class="ptags mono"><span>${p.s}</span><a href="${p.repo}" target="_blank" rel="noopener">Code ↗</a></div></div></section>`).join('');
 
 const rm=matchMedia('(prefers-reduced-motion:reduce)').matches;if(rm)document.documentElement.classList.add('rm');
 const S=[...document.querySelectorAll('[data-s]')],T=[...document.querySelectorAll('[data-theme]')];
 const bar=document.getElementById('bar'),ch=document.getElementById('ch'),dots=document.getElementById('dots');
-dots.innerHTML=T.map((s,i)=>`<a href="#" data-i="${i}" aria-label="${s.dataset.t}"><span>${s.dataset.t}</span><i></i></a>`).join('');
+dots.innerHTML=T.map((s,i)=>`<a href="#" data-i="${i}" data-label="${s.dataset.t}" aria-label="${s.dataset.t}"><span>${s.dataset.t}</span><i></i></a>`).join('');
 dots.onclick=e=>{const a=e.target.closest('a');if(!a)return;e.preventDefault();T[a.dataset.i].scrollIntoView({behavior:rm?'auto':'smooth'})};
 const SEG=["I work best",{o:"alone",n:"with people"},", a team player who would rather",{u:"win together"},"than shine solo. As a problem solver, I",{o:"wait for instructions",n:"find the real problem first"},", then",{u:"make it small"},". I pick things up",{o:"slowly",n:"fast"},"and put them to work right away. I think",{o:"inside the lines",n:"out of the box"},", stay creative, and still make it work."];
 const m=document.getElementById('mani');let h='',TW=0;
@@ -391,7 +437,7 @@ if(!rm)setInterval(()=>{cyc.classList.add('out');setTimeout(()=>{ri=(ri+1)%R.len
         text.textContent = stepsText[i];
         
         let start = performance.now();
-        let duration = 800; /* Slower animation speed per step */
+        let duration = 800;
         
         while(performance.now() - start < duration){
           let progress = (performance.now() - start) / duration;
@@ -414,6 +460,15 @@ if(!rm)setInterval(()=>{cyc.classList.add('out');setTimeout(()=>{ri=(ri+1)%R.len
     }
     runLoader();
   }
+
+  /* ---- ensure all external links open in a new window/tab safely ---- */
+  document.querySelectorAll('a').forEach(a => {
+    if(a.href && !a.getAttribute('target') && !a.getAttribute('href').startsWith('#')) {
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener');
+    }
+  });
+
   /* ---- custom cursor (always visible loop-bound) ---- */
   if(!matchMedia('(hover:hover) and (pointer:fine)').matches)return;
   const c=document.getElementById('cur'),t=c.querySelector('.lb');
@@ -427,9 +482,14 @@ if(!rm)setInterval(()=>{cyc.classList.add('out');setTimeout(()=>{ri=(ri+1)%R.len
       isVisible = true;
       c.classList.add('on');
     }
-    const h=!!(e.target.closest&&e.target.closest('a,button,summary,label,input,[role=button]'));
+    const dotEl = e.target.closest('#dots a');
+    const h = !!(e.target.closest && e.target.closest('a,button,summary,label,input,[role=button]'));
     c.classList.toggle('hit',h);
-    t.textContent=h?'Click':'You';
+    if(dotEl && dotEl.dataset.label){
+      t.textContent = dotEl.dataset.label;
+    } else {
+      t.textContent = h ? 'Click' : 'You';
+    }
   },{passive:true});
 
   function updateCursor(){
@@ -442,6 +502,46 @@ if(!rm)setInterval(()=>{cyc.classList.add('out');setTimeout(()=>{ri=(ri+1)%R.len
   d.addEventListener('mouseenter',()=>{if(isVisible)c.classList.add('on')});
   addEventListener('pointerdown',()=>c.classList.add('dn'));
   addEventListener('pointerup',()=>c.classList.remove('dn'));
+
+  /* ---- Error/Offline View Controllers ---- */
+  const v404 = document.getElementById('view-404');
+  const vOffline = document.getElementById('view-offline');
+  const btnHome404 = document.getElementById('btn-home-404');
+  const btnRetry = document.getElementById('btn-retry');
+
+  // Check manual route flag or hash or query parameter (e.g. ?404 or #404)
+  function checkSpecialViews() {
+    const hash = window.location.hash;
+    const search = window.location.search;
+    if (hash === '#404' || search.includes('404')) {
+      v404.classList.add('active');
+    } else if (hash === '#offline' || search.includes('offline') || !navigator.onLine) {
+      if (!navigator.onLine && hash !== '#404' && !search.includes('404')) {
+        vOffline.classList.add('active');
+      }
+    }
+  }
+
+  window.addEventListener('online', () => vOffline.classList.remove('active'));
+  window.addEventListener('offline', () => vOffline.classList.add('active'));
+
+  btnHome404.addEventListener('click', (e) => {
+    e.preventDefault();
+    history.replaceState(null, '', window.location.pathname);
+    v404.classList.remove('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  btnRetry.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (navigator.onLine) {
+      vOffline.classList.remove('active');
+    } else {
+      window.location.reload();
+    }
+  });
+
+  checkSpecialViews();
 })();
 </script>
 </body>
